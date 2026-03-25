@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 public class RateLimiterService {
 
+    //i.e
     private final int ipMaxRequests;
     private final long ipWindowMillis;
     private final int ipMultiCardMaxCards;
