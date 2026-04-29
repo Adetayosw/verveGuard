@@ -1,9 +1,10 @@
 package com.adetayo.verve_guard.controller;
 
 
+import com.adetayo.verve_guard.aop.Loggable;
 import com.adetayo.verve_guard.dto.request.LoginRequest;
 import com.adetayo.verve_guard.dto.response.LoginResponse;
-import com.adetayo.verve_guard.response.ApiResponse;
+import com.adetayo.verve_guard.dto.response.ApiResponse;
 import com.adetayo.verve_guard.security.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
+    @Loggable
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(
             @Valid @RequestBody LoginRequest request
@@ -45,9 +47,7 @@ public class AuthController {
         }
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        System.out.println("Userdetails: " + userDetails);
         String token = jwtUtil.generateToken(userDetails);
-        System.out.println("token: " + token);
 
         LoginResponse loginResponse = LoginResponse.builder()
                 .token(token)

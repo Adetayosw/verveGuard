@@ -5,7 +5,8 @@ import com.adetayo.verve_guard.dto.request.BlacklistMerchantRequest;
 import com.adetayo.verve_guard.dto.response.BlacklistedCardResponse;
 import com.adetayo.verve_guard.dto.response.BlacklistedMerchantResponse;
 import com.adetayo.verve_guard.dto.response.FlaggedAttemptResponse;
-import com.adetayo.verve_guard.response.ApiResponse;
+import com.adetayo.verve_guard.dto.response.ApiResponse;
+import com.adetayo.verve_guard.dto.response.PageResponse;
 import com.adetayo.verve_guard.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,14 +32,14 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping("/flagged-attempts")
-    public ResponseEntity<ApiResponse<Page<FlaggedAttemptResponse>>> getFlaggedAttempts(
+    public ResponseEntity<ApiResponse<PageResponse<FlaggedAttemptResponse>>> getFlaggedAttempts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
         Page<FlaggedAttemptResponse> result = adminService.getFlaggedAttempts(pageable);
         return ResponseEntity.ok(
-                ApiResponse.success("Flagged attempts retrieved successfully", result)
+                ApiResponse.success("Flagged attempts retrieved successfully", PageResponse.from(result))
         );
     }
 

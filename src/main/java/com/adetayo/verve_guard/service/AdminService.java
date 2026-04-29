@@ -2,6 +2,7 @@ package com.adetayo.verve_guard.service;
 
 
 
+import com.adetayo.verve_guard.aop.Loggable;
 import com.adetayo.verve_guard.enums.FlaggedResolution;
 import com.adetayo.verve_guard.dto.request.BlacklistMerchantRequest;
 import com.adetayo.verve_guard.dto.response.BlacklistedCardResponse;
@@ -32,26 +33,31 @@ public class AdminService {
     private final BlacklistedCardRepository blacklistedCardRepository;
 
 
+    @Loggable
     public Page<FlaggedAttemptResponse> getFlaggedAttempts(Pageable pageable) {
         return flaggedAttemptRepository.findAll(pageable)
                 .map(this::toFlaggedAttemptResponse);
     }
 
+    @Loggable
     public Page<FlaggedAttemptResponse> getPendingReviews(Pageable pageable) {
         return flaggedAttemptRepository.findByResolution(FlaggedResolution.PENDING_REVIEW, pageable)
                 .map(this::toFlaggedAttemptResponse);
     }
 
+    @Loggable
     public Page<BlacklistedMerchantResponse> getBlacklistedMerchants(Pageable pageable) {
         return blacklistedMerchantRepository.findAll(pageable)
                 .map(this::toBlacklistedMerchantResponse);
     }
 
+    @Loggable
     public Page<BlacklistedCardResponse> getBlacklistedCards(Pageable pageable) {
         return blacklistedCardRepository.findAll(pageable)
                 .map(this::toBlacklistedCardResponse);
     }
 
+    @Loggable
     @Transactional
     public void resolveAttempt(Long flaggedAttemptId) {
         FlaggedAttempt attempt = flaggedAttemptRepository.findById(flaggedAttemptId)
@@ -61,6 +67,7 @@ public class AdminService {
         flaggedAttemptRepository.save(attempt);
     }
 
+    @Loggable
     @Transactional
     public void blacklistMerchant(BlacklistMerchantRequest request, String adminUsername) {
         BlacklistedMerchant merchant = BlacklistedMerchant.builder()

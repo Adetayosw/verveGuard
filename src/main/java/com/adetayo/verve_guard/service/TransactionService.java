@@ -1,6 +1,7 @@
 package com.adetayo.verve_guard.service;
 
 
+import com.adetayo.verve_guard.aop.Loggable;
 import com.adetayo.verve_guard.enums.FlaggedResolution;
 import com.adetayo.verve_guard.enums.FraudSignal;
 import com.adetayo.verve_guard.enums.TransactionStatus;
@@ -19,7 +20,7 @@ import com.adetayo.verve_guard.repository.CardSpendingProfileRepository;
 import com.adetayo.verve_guard.repository.FlaggedAttemptRepository;
 import com.adetayo.verve_guard.repository.MerchantCategoryRepository;
 import com.adetayo.verve_guard.repository.TransactionLogRepository;
-import com.adetayo.verve_guard.response.ApiResponse;
+import com.adetayo.verve_guard.dto.response.ApiResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,16 +55,17 @@ public class TransactionService {
     @Value("${fraud.repeat.offender.window-days}")
     private int repeatOffenderWindowDays;
 
+    @Loggable
     @Transactional
     public ApiResponse<TransactionResponse> checkTransaction(TransactionRequest request) {
-        // Hash card immediately; never persist or log raw number
+
         String cardHash = hashCardNumber(request.getCardNumber());
         String cardLastFour = extractLastFour(request.getCardNumber());
         BigDecimal amount = request.getAmount();
         String merchantId = request.getMerchantId();
         String ipAddress = request.getIpAddress();
 
-        // 1. BLACKLISTED CARD
+        // BLACKLISTED CARD
         if (blacklistedCardRepository.existsByCardNumberHash(cardHash)) {
             TransactionResponse response = basicResponse(TransactionStatus.BLOCKED, cardLastFour, amount, merchantId);
             logTransaction(cardHash, cardLastFour, merchantId, amount, ipAddress,
@@ -73,7 +75,7 @@ public class TransactionService {
             return ApiResponse.failure(FraudSignal.CARD_BLACKLISTED.getMessage(), response);
         }
 
-        // 2. BLACKLISTED MERCHANT
+        // BLACKLISTED MERCHANT
         Optional<BlacklistedMerchant> blacklistedMerchantOpt = blacklistedMerchantRepository.findByMerchantId(merchantId);
         if (blacklistedMerchantOpt.isPresent()) {
             TransactionResponse response = basicResponse(TransactionStatus.BLOCKED, cardLastFour, amount, merchantId);
@@ -84,7 +86,7 @@ public class TransactionService {
             return ApiResponse.failure(FraudSignal.BLACKLISTED_MERCHANT.getMessage(), response);
         }
 
-        // 3. IP RATE LIMITING
+        // IP RATE LIMITING
         boolean ipBlocked = rateLimiterService.isIpBlocked(ipAddress, cardHash);
         if (ipBlocked) {
             TransactionResponse response = basicResponse(TransactionStatus.BLOCKED, cardLastFour, amount, merchantId);
@@ -95,7 +97,7 @@ public class TransactionService {
             return ApiResponse.failure(FraudSignal.RATE_LIMIT_EXCEEDED.getMessage(), response);
         }
 
-        // 4. CARD VELOCITY
+        // CARD VELOCITY
         boolean cardVelocityExceeded = rateLimiterService.isCardVelocityExceeded(cardHash);
         if (cardVelocityExceeded) {
             BlacklistedCard blacklistedCard = BlacklistedCard.builder()
@@ -114,7 +116,7 @@ public class TransactionService {
             return ApiResponse.failure(FraudSignal.CARD_VELOCITY_EXCEEDED.getMessage(), response);
         }
 
-        // 5. MERCHANT CATEGORY LIMIT
+        // MERCHANT CATEGORY LIMIT
         MerchantCategory category = null;
         if (blacklistedMerchantOpt.isPresent() ) {
             String categoryName = blacklistedMerchantOpt.get().getMerchantCategory();
@@ -140,7 +142,7 @@ public class TransactionService {
             return ApiResponse.failure(FraudSignal.MERCHANT_CATEGORY_LIMIT_EXCEEDED.getMessage(), response);
         }
 
-        // 6. BEHAVIOURAL AMOUNT ANOMALY
+        // BEHAVIOURAL AMOUNT ANOMALY
         Optional<CardSpendingProfile> profileOpt = cardSpendingProfileRepository.findByCardNumberHash(cardHash);
 
         TransactionStatus interimStatus;
@@ -204,7 +206,7 @@ public class TransactionService {
             }
         }
 
-        // 7. REPEAT OFFENDER PATTERN
+        // REPEAT OFFENDER PATTERN
         if (interimStatus != TransactionStatus.BLOCKED) {
             LocalDateTime windowStart = LocalDateTime.now().minusDays(repeatOffenderWindowDays);
             long flagCount = flaggedAttemptRepository

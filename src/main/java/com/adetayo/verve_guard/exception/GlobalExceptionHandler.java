@@ -1,7 +1,7 @@
 package com.adetayo.verve_guard.exception;
 
 
-import com.adetayo.verve_guard.response.ApiResponse;
+import com.adetayo.verve_guard.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;

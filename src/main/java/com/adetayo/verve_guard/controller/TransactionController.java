@@ -3,7 +3,7 @@ package com.adetayo.verve_guard.controller;
 
 import com.adetayo.verve_guard.dto.request.TransactionRequest;
 import com.adetayo.verve_guard.dto.response.TransactionResponse;
-import com.adetayo.verve_guard.response.ApiResponse;
+import com.adetayo.verve_guard.dto.response.ApiResponse;
 import com.adetayo.verve_guard.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,6 @@ public class TransactionController {
             @Valid @RequestBody TransactionRequest request
     ) {
         ApiResponse<TransactionResponse> response = transactionService.checkTransaction(request);
-        // success=true → 200 OK, success=false → 400 Bad Request
         return ResponseEntity.status(response.isSuccess() ? 200 : 400).body(response);
     }
 }

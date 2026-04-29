@@ -40,7 +40,7 @@ public class AdminUserInitializer implements CommandLineRunner {
                 .username(adminUsername)
                 .email(adminEmail)
                 .password(passwordEncoder.encode(adminPassword))
-                .role(Role.ADMIN)
+                .role(Role.ROLE_ADMIN)
                 .build();
 
         userRepository.save(admin);

@@ -14,11 +14,10 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 public class RateLimiterService {
 
-    //i.e
+
     private final int ipMaxRequests;
     private final long ipWindowMillis;
     private final int ipMultiCardMaxCards;
-
     private final int cardMaxRequests;
     private final long cardWindowMillis;
 
@@ -41,7 +40,6 @@ public class RateLimiterService {
         this.ipMaxRequests = ipMaxRequests;
         this.ipWindowMillis = ipWindowSeconds * 1000;
         this.ipMultiCardMaxCards = ipMultiCardMaxCards;
-
         this.cardMaxRequests = cardMaxRequests;
         this.cardWindowMillis = cardWindowMinutes * 60 * 1000;
     }
@@ -138,7 +136,6 @@ public class RateLimiterService {
         return cardRequestMap.size();
     }
 
-    // Inner classes
 
     private static class RequestTracker {
         private int requestCount;

@@ -1,4 +1,4 @@
-package com.adetayo.verve_guard.response;
+package com.adetayo.verve_guard.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
