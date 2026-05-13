@@ -8,10 +8,10 @@ import com.adetayo.verve_guard.dto.request.BlacklistMerchantRequest;
 import com.adetayo.verve_guard.dto.response.BlacklistedCardResponse;
 import com.adetayo.verve_guard.dto.response.BlacklistedMerchantResponse;
 import com.adetayo.verve_guard.dto.response.FlaggedAttemptResponse;
-import com.adetayo.verve_guard.entity.BlacklistedCard;
 import com.adetayo.verve_guard.entity.BlacklistedMerchant;
 import com.adetayo.verve_guard.entity.FlaggedAttempt;
 import com.adetayo.verve_guard.exception.ResourceNotFoundException;
+import com.adetayo.verve_guard.mapper.AdminMapper;
 import com.adetayo.verve_guard.repository.BlacklistedCardRepository;
 import com.adetayo.verve_guard.repository.BlacklistedMerchantRepository;
 import com.adetayo.verve_guard.repository.FlaggedAttemptRepository;
@@ -31,30 +31,30 @@ public class AdminService {
     private final FlaggedAttemptRepository flaggedAttemptRepository;
     private final BlacklistedMerchantRepository blacklistedMerchantRepository;
     private final BlacklistedCardRepository blacklistedCardRepository;
-
+    private final AdminMapper adminMapper;
 
     @Loggable
     public Page<FlaggedAttemptResponse> getFlaggedAttempts(Pageable pageable) {
         return flaggedAttemptRepository.findAll(pageable)
-                .map(this::toFlaggedAttemptResponse);
+                .map(adminMapper::toFlaggedAttemptResponse);
     }
 
     @Loggable
     public Page<FlaggedAttemptResponse> getPendingReviews(Pageable pageable) {
         return flaggedAttemptRepository.findByResolution(FlaggedResolution.PENDING_REVIEW, pageable)
-                .map(this::toFlaggedAttemptResponse);
+                .map(adminMapper::toFlaggedAttemptResponse);
     }
 
     @Loggable
     public Page<BlacklistedMerchantResponse> getBlacklistedMerchants(Pageable pageable) {
         return blacklistedMerchantRepository.findAll(pageable)
-                .map(this::toBlacklistedMerchantResponse);
+                .map(adminMapper::toBlacklistedMerchantResponse);
     }
 
     @Loggable
     public Page<BlacklistedCardResponse> getBlacklistedCards(Pageable pageable) {
         return blacklistedCardRepository.findAll(pageable)
-                .map(this::toBlacklistedCardResponse);
+                .map(adminMapper::toBlacklistedCardResponse);
     }
 
     @Loggable
@@ -79,43 +79,5 @@ public class AdminService {
                 .build();
 
         blacklistedMerchantRepository.save(merchant);
-    }
-
-    // Mapping helpers (could be moved to MapStruct mappers later)
-
-    private FlaggedAttemptResponse toFlaggedAttemptResponse(FlaggedAttempt attempt) {
-        return FlaggedAttemptResponse.builder()
-                .id(attempt.getId())
-                .cardNumberHash(attempt.getCardNumberHash())
-                .cardLastFour(attempt.getCardLastFour())
-                .merchantId(attempt.getMerchantId())
-                .amount(attempt.getAmount())
-                .ipAddress(attempt.getIpAddress())
-                .fraudSignal(attempt.getFraudSignal())
-                .fraudMessage(attempt.getFraudMessage())
-                .resolution(attempt.getResolution())
-                .createdAt(attempt.getCreatedAt())
-                .build();
-    }
-
-    private BlacklistedMerchantResponse toBlacklistedMerchantResponse(BlacklistedMerchant merchant) {
-        return BlacklistedMerchantResponse.builder()
-                .id(merchant.getId())
-                .merchantId(merchant.getMerchantId())
-                .merchantCategory(merchant.getMerchantCategory())
-                .reason(merchant.getReason())
-                .blacklistedBy(merchant.getBlacklistedBy())
-                .blacklistedAt(merchant.getBlacklistedAt())
-                .build();
-    }
-
-    private BlacklistedCardResponse toBlacklistedCardResponse(BlacklistedCard card) {
-        return BlacklistedCardResponse.builder()
-                .id(card.getId())
-                .cardNumberHash(card.getCardNumberHash())
-                .cardLastFour(card.getCardLastFour())
-                .reason(card.getReason())
-                .blacklistedAt(card.getBlacklistedAt())
-                .build();
     }
 }
